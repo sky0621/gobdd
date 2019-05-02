@@ -15,14 +15,14 @@ var _ = Describe("Notice", func() {
 				// 登録対象の『お知らせ』情報
 				noticeForCreateParam usecasemodel.Notice
 				// 『お知らせ』の登録結果
-				//expectedResult usecasemodel.NoticeCreateResponse
+				expectedResult usecasemodel.NoticeCreateResponse
 			)
 			BeforeEach(func() {
-				//expectedResult = nil
+				noticeForCreateParam = usecasemodel.NewNotice("お知らせ１", "これはお知らせ１です。", 1556636400, 1557327599)
+				expectedResult = usecasemodel.NewNoticeCreateResponse("ef5198df-5c04-42ba-9fbe-2beb2794468a", noticeForCreateParam)
 			})
 			It("表示期間を指定して『お知らせ』を登録できる。", func() {
-				//Expect(usecase.NewNotice().Create(noticeForCreateParam)).To(Equal(expectedResult))
-				Expect(usecase.NewNotice().Create(noticeForCreateParam)).To(BeNil())
+				Expect(usecase.NewNotice().Create(noticeForCreateParam)).To(Equal(expectedResult))
 			})
 		})
 	})
