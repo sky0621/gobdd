@@ -1,19 +1,33 @@
 package usecase
 
-import usecasemodel "gobdd/usecase/model"
+import (
+	"gobdd/domain"
+	domainmodel "gobdd/domain/model"
+	usecasemodel "gobdd/usecase/model"
 
-func NewNotice() Notice {
-	return &notice{}
+	"github.com/google/uuid"
+)
+
+func NewNotice(noticeDomain domain.Notice) Notice {
+	return &notice{noticeDomain: noticeDomain}
 }
 
 type Notice interface {
-	Create(noticeModel usecasemodel.Notice) usecasemodel.NoticeCreateResponse
+	Create(noticeModel *usecasemodel.Notice) (string, error)
 }
 
 type notice struct {
+	noticeDomain domain.Notice
 }
 
-func (n *notice) Create(noticeModel usecasemodel.Notice) usecasemodel.NoticeCreateResponse {
-	// FIXME: 【テストコードを通すための実装】ここでは渡された『お知らせ』情報と固定のIDを返却する。
-	return usecasemodel.NewNoticeCreateResponse("ef5198df-5c04-42ba-9fbe-2beb2794468a", noticeModel)
+func (n *notice) Create(noticeModel *usecasemodel.Notice) (string, error) {
+	// ドメインモデルへの変換（ユースケース層独自の構造からドメイン層独自の構造への変換（例：日時の持ち方や「姓」と「名」別持ちから「姓名」等））
+	domainModel := &domainmodel.Notice{
+		ID:          uuid.New().String(),
+		Title:       noticeModel.Title,
+		Text:        noticeModel.Text,
+		PublishFrom: noticeModel.PublishFrom,
+		PublishTo:   noticeModel.PublishTo,
+	}
+	return n.noticeDomain.Create(domainModel)
 }
