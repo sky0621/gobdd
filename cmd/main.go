@@ -1,17 +1,19 @@
 package main
 
 import (
+	"errors"
 	"fmt"
+	"gobdd/adapter/middleware/persistence"
 	"net/http"
 	"os"
-
-	"github.com/jinzhu/gorm"
 
 	"github.com/labstack/echo/middleware"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/labstack/echo"
 )
+
+const PersistenceKey = "PERSISTENCE"
 
 func main() {
 	// データベース接続ソース文字列
@@ -30,22 +32,9 @@ func main() {
 		dataSource = "localuser:localpass@tcp(127.0.0.1)/localdb?charset=utf8&parseTime=True&loc=Local"
 	}
 
-	// データベース接続
-	dbConn, err := gorm.Open("mysql", dataSource)
+	persistentMiddleware, err := persistence.NewRDBMiddleware(dataSource)
 	if err != nil {
-		panic(err.Error())
-	}
-	if dbConn == nil {
-		panic("can not connect to Cloud SQL")
-	}
-	defer func() {
-		if err := dbConn.Close(); err != nil {
-			panic(err.Error())
-		}
-	}()
-	dbConn.LogMode(true)
-	if err := dbConn.DB().Ping(); err != nil {
-		panic(err.Error())
+		panic(err)
 	}
 
 	// WebアプリケーションフレームワークとしてEchoを利用
@@ -54,7 +43,7 @@ func main() {
 	e.Use(middleware.Recover())
 	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			c.
+			c.Set(PersistenceKey, persistentMiddleware)
 			return next(c)
 		}
 	})
@@ -72,6 +61,11 @@ func main() {
 }
 
 func createNotice(c echo.Context) error {
+	contextVal := c.Get(PersistenceKey)
+	rdbMiddleware, ok := contextVal.(NewRDBMiddleware)
+	if !ok {
+		return errors.New("abnormal end")
+	}
 
 	// FIXME:
 	return c.JSON(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
