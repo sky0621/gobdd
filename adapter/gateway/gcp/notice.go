@@ -1,12 +1,20 @@
 package gcpgateway
 
-import domainmodel "gobdd/domain/model"
+import (
+	"gobdd/adapter/middleware/persistence"
+	"gobdd/domain"
+	domainmodel "gobdd/domain/model"
+)
 
-type NoticeImpl struct {
-	// FIXME: Cloud SQLへのコネクションを保持
+func NewNotice(rdbMiddleware persistence.RDBMiddleware) domain.Notice {
+	return &noticeImpl{rdbMiddleware: rdbMiddleware}
 }
 
-func (n *NoticeImpl) Create(noticeModel *domainmodel.Notice) (string, error) {
+type noticeImpl struct {
+	rdbMiddleware persistence.RDBMiddleware
+}
+
+func (n *noticeImpl) Create(noticeModel *domainmodel.Notice) (string, error) {
 	// FIXME: 実DBへの永続化処理を実装
 	return "FIXME", nil
 }
