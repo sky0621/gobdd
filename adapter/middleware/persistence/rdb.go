@@ -24,11 +24,16 @@ func NewRDBMiddleware(dataSource string) (RDBMiddleware, error) {
 }
 
 type RDBMiddleware interface {
+	Create(v interface{}) error
 	Close() error
 }
 
 type rdbMiddleware struct {
 	dbConn *gorm.DB
+}
+
+func (p *rdbMiddleware) Create(v interface{}) error {
+	return p.dbConn.Save(v).Error
 }
 
 func (p *rdbMiddleware) Close() error {

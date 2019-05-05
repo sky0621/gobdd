@@ -1,9 +1,11 @@
 package gcpgateway
 
 import (
+	middlewaremodel "gobdd/adapter/middleware/model"
 	"gobdd/adapter/middleware/persistence"
 	"gobdd/domain"
 	domainmodel "gobdd/domain/model"
+	"time"
 )
 
 func NewNotice(rdbMiddleware persistence.RDBMiddleware) domain.Notice {
@@ -15,6 +17,17 @@ type noticeImpl struct {
 }
 
 func (n *noticeImpl) Create(noticeModel *domainmodel.Notice) (string, error) {
-	// FIXME: 実DBへの永続化処理を実装
-	return "FIXME", nil
+	m := &middlewaremodel.Notice{
+		ID:          noticeModel.ID,
+		Title:       noticeModel.Title,
+		Text:        noticeModel.Text,
+		PublishFrom: noticeModel.PublishFrom,
+		PublishTo:   noticeModel.PublishTo,
+		CreatedAt:   time.Now(),
+	}
+
+	if err := n.rdbMiddleware.Create(m); err != nil {
+		return "", err
+	}
+	return noticeModel.ID, nil
 }

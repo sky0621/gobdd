@@ -9,7 +9,7 @@ import (
 )
 
 func NewNotice(rdbMiddleware persistence.RDBMiddleware) domain.Notice {
-	var n domaiin.Notice
+	var n domain.Notice
 	if global.IsLocal() {
 		n = localgateway.NewNotice(rdbMiddleware)
 	} else {

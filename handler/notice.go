@@ -4,6 +4,7 @@ import (
 	"gobdd/adapter/gateway"
 	"gobdd/adapter/middleware/persistence"
 	"gobdd/usecase"
+	usecasemodel "gobdd/usecase/model"
 	"net/http"
 
 	"github.com/labstack/echo"
@@ -21,17 +22,25 @@ func createNotice(c echo.Context) error {
 	}
 
 	// HTTPリクエストパラメータ（JSON形式のBodyを想定）を構造体にマッピング
-	var noticeParam *noticeForm
-	if err := c.Bind(&noticeParam); err != nil {
+	var form *noticeForm
+	if err := c.Bind(&form); err != nil {
 		return c.JSON(http.StatusBadRequest, http.StatusText(http.StatusBadRequest))
 	}
 
-	id, err := usecase.NewNotice(gateway.NewNotice(rdbMiddleware)).Create()
+	id, err := usecase.NewNotice(gateway.NewNotice(rdbMiddleware)).Create(form.ConvertToUsecaseModel())
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 	}
 
-	return c.JSON(http.StatusOK, http.StatusText(http.StatusInternalServerError))
+	return c.JSON(http.StatusOK, struct {
+		Code    int    `json:"code"` // HTTPステータスコード
+		Message string `json:"text"` // HTTPステータスメッセージ
+		ID      string `json:"id"`   // 『お知らせ』のユニークID
+	}{
+		Code:    http.StatusOK,
+		Message: http.StatusText(http.StatusOK),
+		ID:      id,
+	})
 }
 
 type noticeForm struct {
@@ -41,8 +50,11 @@ type noticeForm struct {
 	PublishTo   int    `json:"publish_to"`   // お知らせの掲載終了日時
 }
 
-type response struct {
-	Code    string `json:"code"` // HTTPステータスコード
-	Message string `json:"text"` // HTTPステータスメッセージ
-
+func (f *noticeForm) ConvertToUsecaseModel() *usecasemodel.Notice {
+	return &usecasemodel.Notice{
+		Title:       f.Title,
+		Text:        f.Text,
+		PublishFrom: f.PublishFrom,
+		PublishTo:   f.PublishTo,
+	}
 }

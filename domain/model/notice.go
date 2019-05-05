@@ -6,6 +6,4 @@ type Notice struct {
 	Text        string
 	PublishFrom int
 	PublishTo   int
-	CreatedAt   int
-	UpdatedAt   int
 }
